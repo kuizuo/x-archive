@@ -19,12 +19,6 @@ pnpm install
 
 ### 2. 配置用户信息
 
-复制示例配置文件并修改：
-
-```bash
-cp src/config/user.example.ts src/config/user.ts
-```
-
 编辑 `src/config/user.ts`，修改以下信息：
 
 ```typescript
