@@ -21,10 +21,19 @@ const CONFIG = {
 };
 
 /**
- *  抓包将协议头复制到这里
+ * 请根据实际情况修改以下配置
  */
 const HEADERS = {
-
+  accept: '*/*',
+  authorization: '', // 填写你的 authorization 值
+  'content-type': 'application/json', // 固定值
+  cookie: '', // 填写你的 cookie 值
+  'x-csrf-token':'', // 填写你的 x-csrf-token 值
+  'x-twitter-auth-type': 'OAuth2Session', // 固定值
+  'x-twitter-active-user': 'yes', // 固定值
+  'x-twitter-client-language': 'zh-cn', // 固定值
+  'user-agent':
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', // 固定值
 };
 
 const FEATURES = {
