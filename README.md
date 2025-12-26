@@ -2,6 +2,9 @@
 
 一个用于归档和浏览 Twitter/X 推文的工具。通过爬虫脚本获取推文数据，并使用现代化的 Web 界面进行浏览和查看。
 
+
+> ⚠️ **重要提示**：该方法需要登录你的 X 账号(通常是账号已被冻结的)，且仅能获取个人账号的推文信息，无法获取他人账号的推文信息。
+
 ## **✨ 功能**
 
 - 推文抓取与归档
@@ -113,3 +116,8 @@ pnpm preview
 ## 📄 许可证
 
 [BSD 3-Clause License](./LICENSE)
+
+## 🙏 致谢
+
+- [react-tweet](https://github.com/vercel/react-tweet) - 推文展示组件
+- [html-to-image](https://github.com/bubkoo/html-to-image) - 图片导出功能
