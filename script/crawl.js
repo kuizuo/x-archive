@@ -6,35 +6,22 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadCrawlConfig } from './config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ==================== 配置 ====================
-const CONFIG = {
-  ENDPOINT: 'https://x.com/i/api/graphql/-V26I6Pb5xDZ3C7BWwCQ_Q/UserTweets',
-  USER_ID: '', // 用户 ID
+let CONFIG = {
+  ENDPOINT: '',
+  USER_ID: '',
   PAGE_SIZE: 20,
   MAX_TWEETS: 2000,
   DELAY_MS: 1000, // 请求间隔（毫秒），避免请求过快
   OUTPUT_DIR: path.join(__dirname, '../public'),
 };
 
-/**
- * 请根据实际情况修改以下配置
- */
-const HEADERS = {
-  accept: '*/*',
-  authorization: '', // 填写你的 authorization 值
-  'content-type': 'application/json', // 固定值
-  cookie: '', // 填写你的 cookie 值
-  'x-csrf-token':'', // 填写你的 x-csrf-token 值
-  'x-twitter-auth-type': 'OAuth2Session', // 固定值
-  'x-twitter-active-user': 'yes', // 固定值
-  'x-twitter-client-language': 'zh-cn', // 固定值
-  'user-agent':
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', // 固定值
-};
+let HEADERS = {};
 
 const FEATURES = {
   rweb_video_screen_enabled: false,
@@ -197,24 +184,49 @@ function getPageFilePath(page) {
 async function fetchPage(cursor, page) {
   const url = buildUrl(cursor);
   console.log(`📄 请求第 ${page} 页...`);
+  const maxRetries = 2;
+  let attempt = 0;
 
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: HEADERS,
-  });
+  while (true) {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: HEADERS,
+      });
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      if (!response.ok) {
+        const shouldRetry =
+          (response.status === 429 || response.status >= 500) &&
+          attempt < maxRetries;
+        if (shouldRetry) {
+          const wait = 1000 * 2 ** attempt;
+          console.log(`⚠️  HTTP ${response.status}，${wait}ms 后重试 (${attempt + 1}/${maxRetries})`);
+          await delay(wait);
+          attempt++;
+          continue;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const json = await response.json();
+
+      // 检查是否有错误
+      if (json.errors) {
+        throw new Error(`API 错误: ${JSON.stringify(json.errors)}`);
+      }
+
+      return json;
+    } catch (error) {
+      if (attempt < maxRetries) {
+        const wait = 1000 * 2 ** attempt;
+        console.log(`⚠️  请求失败，${wait}ms 后重试 (${attempt + 1}/${maxRetries})`);
+        await delay(wait);
+        attempt++;
+        continue;
+      }
+      throw error;
+    }
   }
-
-  const json = await response.json();
-
-  // 检查是否有错误
-  if (json.errors) {
-    throw new Error(`API 错误: ${JSON.stringify(json.errors)}`);
-  }
-
-  return json;
 }
 
 /**
@@ -231,9 +243,16 @@ function savePage(json, page) {
 /**
  * 爬取所有推文页面
  */
-export async function crawl() {
-  console.log('🚀 开始爬取推文数据...\n');
+export async function crawl(argv = process.argv.slice(2)) {
+  const context = loadCrawlConfig(argv);
+  CONFIG = context.config;
+  HEADERS = context.headers;
 
+  console.log('🚀 开始爬取推文数据...\n');
+  console.log(`   userId: ${CONFIG.USER_ID}`);
+  console.log(`   pageSize: ${CONFIG.PAGE_SIZE}`);
+  console.log(`   maxTweets: ${CONFIG.MAX_TWEETS}\n`);
+  console.log(`   headers: ${JSON.stringify(HEADERS, null, 2)}`);
   // 确保输出目录存在
   ensureDir(CONFIG.OUTPUT_DIR);
 
