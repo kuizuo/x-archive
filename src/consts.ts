@@ -1,8 +1,3 @@
-/**
- * 用户配置文件
- * 请根据你的实际情况修改以下配置
- */
-
 export interface UserConfig {
   /** 用户名（用于显示，如 @username） */
   screenName: string
@@ -20,7 +15,7 @@ export interface UserConfig {
   archiveScreenName: string
 }
 
-export const userConfig: UserConfig = {
+export const user = {
   screenName: 'kuizuo',
   name: '愧怍',
   avatar: 'https://github.com/kuizuo.png',
@@ -28,10 +23,10 @@ export const userConfig: UserConfig = {
   verified: true,
   followScreenName: 'ku1zu0',
   archiveScreenName: 'kuizuo',
-}
+} satisfies UserConfig
 
 export const ENABLE_IMAGE_PROXY = import.meta.env.VITE_ENABLE_IMAGE_PROXY === 'true'
 
 // 可直接替代为 cloudflare worker 路由，例 https://xxxxx.workers.dev/img-proxy?url=
-export const imgProxyUrl = '/img-proxy?url=' 
+export const IMG_PROXY_URL = '/img-proxy?url=' 
 

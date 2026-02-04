@@ -1,5 +1,5 @@
 import { type FC, useState, useEffect } from "react";
-import { userConfig } from "../config";
+import { user } from "../consts";
 
 export const Sidebar: FC = () => {
 	const [showDisclaimer, setShowDisclaimer] = useState(false);
@@ -35,7 +35,7 @@ export const Sidebar: FC = () => {
 					<div className="flex items-center justify-between mb-3">
 						<h2 className="text-xl font-bold text-white">用户</h2>
 						<a
-							href={`https://x.com/intent/follow?screen_name=${userConfig.followScreenName}`}
+							href={`https://x.com/intent/follow?screen_name=${user.followScreenName}`}
 							target="_blank"
 							rel="noopener noreferrer"
 							className="bg-white text-black px-4 py-1.5 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors"
@@ -46,17 +46,17 @@ export const Sidebar: FC = () => {
 					<div className="flex items-center space-x-3 group/user cursor-pointer">
 						<div className="w-10 h-10 rounded-full shrink-0 overflow-hidden">
 							<img
-								src={userConfig.avatar}
-								alt={userConfig.screenName}
+								src={user.avatar}
+								alt={user.screenName}
 								className="w-full h-full object-cover"
 							/>
 						</div>
 						<div className="flex-1 min-w-0">
 							<div className="flex items-center space-x-1">
 								<span className="font-bold text-white hover:underline truncate">
-									{userConfig.name}
+									{user.name}
 								</span>
-								{userConfig.verified && (
+								{user.verified && (
 									<svg
 										className="w-4 h-4 fill-blue-400 shrink-0"
 										viewBox="0 0 22 22"
@@ -71,10 +71,10 @@ export const Sidebar: FC = () => {
 								)}
 							</div>
 							<div className="text-gray-500 text-sm truncate">
-								@{userConfig.screenName}
+								@{user.screenName}
 							</div>
 							<div className="text-white text-[14px] mt-1 leading-snug">
-								{userConfig.bio}
+								{user.bio}
 							</div>
 						</div>
 					</div>
@@ -87,7 +87,7 @@ export const Sidebar: FC = () => {
 						<p className="text-white text-[15px] leading-normal">
 							这是 x{" "}
 							<span className="text-blue-500 hover:underline cursor-pointer">
-								@{userConfig.archiveScreenName}
+								@{user.archiveScreenName}
 							</span>{" "}
 							账号的历史推文，仅作为个人推文的历史存档使用。
 						</p>

@@ -16,7 +16,7 @@ import { TweetBody } from "./tweet-body";
 import { TweetActions } from "./tweet-actions";
 import type { Tweet as RTweet } from "react-tweet/api";
 import { toPng } from "html-to-image";
-import { imgProxyUrl, ENABLE_IMAGE_PROXY } from "../config";
+import { IMG_PROXY_URL, ENABLE_IMAGE_PROXY } from "../consts";
 
 const waitForImages = async (root: HTMLElement) => {
 	const images = Array.from(root.querySelectorAll("img"));
@@ -114,7 +114,7 @@ const TweetContent = ({
 		if(tweet.user){
 			tweet.user = {
 				...tweet.user,
-				profile_image_url_https: `${imgProxyUrl}${tweet.user.profile_image_url_https}`,
+				profile_image_url_https: `${IMG_PROXY_URL}${tweet.user.profile_image_url_https}`,
 			}
 		}
 	
@@ -123,7 +123,7 @@ const TweetContent = ({
 				...tweet.quoted_tweet,
 				user :{
 					...tweet.quoted_tweet.user,
-					profile_image_url_https: `${imgProxyUrl}${tweet.quoted_tweet.user.profile_image_url_https}`,
+					profile_image_url_https: `${IMG_PROXY_URL}${tweet.quoted_tweet.user.profile_image_url_https}`,
 				}
 			};
 		}

@@ -31,10 +31,10 @@ pnpm install
 
 ### 3. 配置用户信息
 
-编辑 `src/config/index.ts`，修改 `userConfig`：
+编辑 `src/consts.ts`，修改 `user`：
 
 ```typescript
-export const userConfig: UserConfig = {
+export const user: UserConfig = {
   screenName: 'your_username',        // 用户名
   name: '你的显示名称',                 // 显示名称
   avatar: 'https://example.com/avatar.png',  // 头像 URL
