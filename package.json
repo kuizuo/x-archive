@@ -1,5 +1,5 @@
 {
-  "name": "tweets-archive",
+  "name": "x-archive",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "wrangler:dev": "pnpm build && wrangler pages dev dist",
+    "wrangler:deploy": "pnpm build && wrangler pages deploy dist"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -19,6 +21,7 @@
     "react-tweet": "^3.3.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260203.0",
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",

@@ -16,6 +16,78 @@ import { TweetBody } from "./tweet-body";
 import { TweetActions } from "./tweet-actions";
 import type { Tweet as RTweet } from "react-tweet/api";
 import { toPng } from "html-to-image";
+import { imgProxyUrl, ENABLE_IMAGE_PROXY } from "../config";
+
+const waitForImages = async (root: HTMLElement) => {
+	const images = Array.from(root.querySelectorAll("img"));
+	images.forEach((img) => {
+		if (!img.crossOrigin) {
+			img.crossOrigin = "anonymous";
+		}
+		img.decoding = "sync";
+	});
+
+	await Promise.all(
+		images.map(
+			(img) =>
+				new Promise<void>((resolve) => {
+					if (img.complete) {
+						resolve();
+						return;
+					}
+					const onDone = () => resolve();
+					img.onload = onDone;
+					img.onerror = onDone;
+				}),
+		),
+	);
+
+	if ("decode" in HTMLImageElement.prototype) {
+		await Promise.all(
+			images.map(async (img) => {
+				try {
+					await img.decode();
+				} catch {
+					// Ignore decode failures and continue capturing.
+				}
+			}),
+		);
+	}
+};
+
+const safeScrollIntoView = (node: HTMLElement) => {
+	try {
+		node.scrollIntoView({ behavior: "auto", block: "nearest" });
+	} catch {
+		node.scrollIntoView();
+	}
+};
+
+const downloadDataUrl = (dataUrl: string, filename: string) => {
+	const link = document.createElement("a");
+	link.download = filename;
+	link.href = dataUrl;
+	link.rel = "noopener";
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+};
+
+const captureFilter = (node: HTMLElement) => {
+	if (node instanceof Element) {
+		if (node.getAttribute("data-capture-ignore") === "true") {
+			return false;
+		}
+		if (
+			node instanceof HTMLVideoElement ||
+			node instanceof HTMLIFrameElement ||
+			node instanceof HTMLSourceElement
+		) {
+			return false;
+		}
+	}
+	return true;
+};
 
 const TweetContent = ({
 	tweet: t,
@@ -38,56 +110,55 @@ const TweetContent = ({
 		return null;
 	}
 
+	if(ENABLE_IMAGE_PROXY){
+		if(tweet.user){
+			tweet.user = {
+				...tweet.user,
+				profile_image_url_https: `${imgProxyUrl}${tweet.user.profile_image_url_https}`,
+			}
+		}
+	
+		if (tweet.quoted_tweet) {
+			tweet.quoted_tweet = {
+				...tweet.quoted_tweet,
+				user :{
+					...tweet.quoted_tweet.user,
+					profile_image_url_https: `${imgProxyUrl}${tweet.quoted_tweet.user.profile_image_url_https}`,
+				}
+			};
+		}
+	}
+	
+
 	const handleCapture = async () => {
 		if (!tweetRef.current || isCapturing) return;
 
 		setIsCapturing(true);
 		try {
 			// 确保元素滚动到视图中
-			tweetRef.current.scrollIntoView({
-				behavior: "instant",
-				block: "nearest",
-			});
+			safeScrollIntoView(tweetRef.current);
 
 			// 等待所有图片加载完成
-			const images = tweetRef.current.querySelectorAll("img");
-			await Promise.all(
-				Array.from(images).map(
-					(img) =>
-						new Promise((resolve) => {
-							if (img.complete) {
-								resolve(null);
-							} else {
-								img.onload = () => resolve(null);
-								img.onerror = () => resolve(null); // 即使失败也继续
-							}
-						}),
-				),
-			);
+			await waitForImages(tweetRef.current);
+
+			if (document.fonts?.ready) {
+				await document.fonts.ready;
+			}
 
 			// 等待一帧确保所有内容都已渲染
 			await new Promise((resolve) =>
 				requestAnimationFrame(() => resolve(null)),
 			);
 
-			// 获取元素的完整尺寸
-			const scrollHeight = tweetRef.current.scrollHeight;
-			const scrollWidth = tweetRef.current.scrollWidth;
-
+			const filename = `tweet-${tweet.id_str || Date.now()}.png`;
 			const dataUrl = await toPng(tweetRef.current, {
 				backgroundColor: undefined,
-				pixelRatio: 2, // 提高图片清晰度
-				quality: 1,
-				width: scrollWidth,
-				height: scrollHeight,
+				pixelRatio: 2,
 				cacheBust: true,
+				filter: captureFilter,
 			});
 
-			// 创建下载链接
-			const link = document.createElement("a");
-			link.download = `tweet-${tweet.id_str || Date.now()}.png`;
-			link.href = dataUrl;
-			link.click();
+			downloadDataUrl(dataUrl, filename);
 		} catch (error) {
 			console.error("截图失败:", error);
 		} finally {
@@ -102,7 +173,7 @@ const TweetContent = ({
 			onMouseLeave={() => setIsHovered(false)}
 			className="relative -mt-6"
 		>
-			{isHovered && !isCapturing && (
+			{isHovered && !isCapturing && ENABLE_IMAGE_PROXY && (
 				<button
 					type="button"
 					onClick={(e) => {
@@ -110,6 +181,7 @@ const TweetContent = ({
 						handleCapture();
 					}}
 					disabled={isCapturing}
+					data-capture-ignore="true"
 					style={{
 						position: "absolute",
 						bottom: "8px",
