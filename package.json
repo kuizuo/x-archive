@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "wrangler:dev": "pnpm build && wrangler pages dev dist",
+    "crawl": "node script/crawl.js",
+    "wrangler:dev": "tsc -b && vite build --watch && wrangler pages dev dist",
     "wrangler:deploy": "pnpm build && wrangler pages deploy dist"
   },
   "dependencies": {

@@ -13,6 +13,7 @@ import { extractEntries } from './extract-entries.js';
  */
 async function main() {
   const totalStartTime = Date.now();
+  const argv = process.argv.slice(2);
 
   console.log('='.repeat(60));
   console.log('🚀 X/Twitter 数据归档工具');
@@ -23,7 +24,7 @@ async function main() {
     // 第一步：爬取数据
     console.log('📥 步骤 1/2: 爬取推文数据');
     console.log('-'.repeat(60));
-    const crawlResult = await crawl();
+    const crawlResult = await crawl(argv);
 
     if (!crawlResult.success) {
       throw new Error('爬取数据失败');
@@ -68,4 +69,3 @@ async function main() {
 
 // 执行主函数
 main();
-

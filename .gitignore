@@ -23,4 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
+# Sensitive files
+script/curl.txt
 .wrangler

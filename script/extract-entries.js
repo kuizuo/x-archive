@@ -14,6 +14,7 @@ const __dirname = path.dirname(__filename);
 const CONFIG = {
   INPUT_DIR: path.join(__dirname, '../public'),
   OUTPUT_FILE: path.join(__dirname, '../public/entries.json'),
+  PROFILE_FILE: path.join(__dirname, '../public/profile.json'),
 };
 
 // ==================== 工具函数 ====================
@@ -95,6 +96,64 @@ function saveEntries(entries, outputPath) {
   fs.writeFileSync(outputPath, JSON.stringify(output, null, 2), 'utf-8');
 }
 
+/**
+ * 从 entries 中提取用户信息
+ */
+function extractProfileFromEntries(entries) {
+  let foundUser = null;
+
+  const walk = (item) => {
+    if (!item || foundUser) return;
+
+    const itemContent = item?.content?.itemContent || item?.item?.itemContent;
+    if (itemContent?.itemType === 'TimelineTweet') {
+      const user =
+        itemContent?.tweet_results?.result?.core?.user_results?.result;
+      if (user) {
+        foundUser = user;
+        return;
+      }
+    }
+
+    const items = item?.content?.items;
+    if (Array.isArray(items)) {
+      for (const moduleItem of items) {
+        walk(moduleItem);
+        if (foundUser) return;
+      }
+    }
+  };
+
+  for (const entry of entries) {
+    walk(entry);
+    if (foundUser) break;
+  }
+
+  if (!foundUser) return null;
+
+  const screenName = foundUser?.core?.screen_name || '';
+  const name = foundUser?.core?.name || '';
+  const avatar = foundUser?.avatar?.image_url || '';
+  const bio = foundUser?.legacy?.description || foundUser?.profile_bio?.description || '';
+  const verified =
+    Boolean(foundUser?.is_blue_verified) || Boolean(foundUser?.verification?.verified);
+
+  return {
+    screenName,
+    name,
+    avatar,
+    bio,
+    verified,
+    followScreenName: screenName,
+    archiveScreenName: screenName,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+function saveProfile(profile, outputPath) {
+  fs.writeFileSync(outputPath, JSON.stringify(profile, null, 2), 'utf-8');
+}
+
 // ==================== 主函数 ====================
 
 /**
@@ -146,6 +205,17 @@ export async function extractEntries() {
       saveEntries(allEntries, CONFIG.OUTPUT_FILE);
     }
 
+    // 提取并保存 profile
+    if (allEntries.length > 0) {
+      const profile = extractProfileFromEntries(allEntries);
+      if (profile) {
+        saveProfile(profile, CONFIG.PROFILE_FILE);
+        console.log(`   已生成 ${path.basename(CONFIG.PROFILE_FILE)}`);
+      } else {
+        console.log('   ⚠️  未能提取到用户信息');
+      }
+    }
+
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
     console.log('\n✅ 提取完成！');
@@ -177,7 +247,6 @@ if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith
     process.exit(1);
   });
 }
-
 
 
 
