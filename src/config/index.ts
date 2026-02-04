@@ -21,11 +21,17 @@ export interface UserConfig {
 }
 
 export const userConfig: UserConfig = {
-  screenName: 'your_username',
-  name: '你的显示名称',
-  avatar: 'https://example.com/avatar.png',
-  bio: '你的个人简介',
-  verified: false,
-  followScreenName: 'your_username',
-  archiveScreenName: 'your_username',
+  screenName: 'kuizuo',
+  name: '愧怍',
+  avatar: 'https://github.com/kuizuo.png',
+  bio: '故事不是写出来的，而是经历出来的。',
+  verified: true,
+  followScreenName: 'ku1zu0',
+  archiveScreenName: 'kuizuo',
 }
+
+export const ENABLE_IMAGE_PROXY = import.meta.env.VITE_ENABLE_IMAGE_PROXY === 'true'
+
+// 可直接替代为 cloudflare worker 路由，例 https://xxxxx.workers.dev/img-proxy?url=
+export const imgProxyUrl = '/img-proxy?url=' 
+

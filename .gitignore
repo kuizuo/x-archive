@@ -25,3 +25,4 @@ dist-ssr
 
 # Sensitive files
 script/curl.txt
+.wrangler
