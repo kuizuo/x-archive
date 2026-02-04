@@ -92,7 +92,15 @@ export const onRequest: PagesFunction = async ({ request, waitUntil }) => {
 	const response = withCors(upstreamResponse);
 
 	if (request.method === "GET" && response.ok) {
-		waitUntil(cache.put(cacheKey, response.clone()));
+		const responseToCache = response.clone();
+		const cacheHeaders = new Headers(responseToCache.headers);
+		cacheHeaders.set("Cache-Control", "public, max-age=86400");
+		const cacheableResponse = new Response(responseToCache.body, {
+			status: responseToCache.status,
+			statusText: responseToCache.statusText,
+			headers: cacheHeaders,
+		});
+		waitUntil(cache.put(cacheKey, cacheableResponse));
 	}
 
 	return response;
