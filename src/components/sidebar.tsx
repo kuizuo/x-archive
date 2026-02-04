@@ -1,5 +1,5 @@
 import { type FC, useState, useEffect } from "react";
-import { userConfig } from "../config/user";
+import { userConfig } from "../config";
 
 export const Sidebar: FC = () => {
 	const [showDisclaimer, setShowDisclaimer] = useState(false);
