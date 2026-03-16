@@ -1,4 +1,4 @@
-const ALLOWED_HOSTS = new Set(["pbs.twimg.com"]);
+const ALLOWED_HOSTS = new Set(["pbs.twimg.com", "img.x.kuizuo.me"]);
 
 const withCors = (response: Response) => {
 	const headers = new Headers(response.headers);

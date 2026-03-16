@@ -19,7 +19,7 @@ import { toPng } from "html-to-image";
 import { IMG_PROXY_URL, ENABLE_IMAGE_PROXY } from "../consts";
 
 // 自定义 MediaImg：img.x.kuizuo.me 的 URL 被 react-tweet 的 getMediaUrl 去掉扩展名并加了 ?format=xxx&name=xxx，
-// 代理可能无法解析，需要还原为带扩展名的完整路径
+// 代理可能无法解析，需要还原为带扩展名的完整路径；启用代理时走 img-proxy
 const MediaImg = (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
 	const src = props.src;
 	let resolvedSrc = src;
@@ -33,6 +33,9 @@ const MediaImg = (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
 		} catch {
 			// 解析失败则使用原 src
 		}
+	}
+	if (ENABLE_IMAGE_PROXY && typeof resolvedSrc === "string") {
+		resolvedSrc = `${IMG_PROXY_URL}${encodeURIComponent(resolvedSrc)}`;
 	}
 	return <img {...props} src={resolvedSrc} />;
 };
