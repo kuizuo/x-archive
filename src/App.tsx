@@ -27,6 +27,11 @@ const isMobileViewport = () => window.matchMedia("(max-width: 767px)").matches;
 const getTweetKey = (tweet: RTweet, index: number) =>
 	tweet.id_str || (tweet as { id?: string }).id || `tweet-${index}`;
 
+const getTweetIdFromPath = (pathname: string): string | null => {
+	const matched = pathname.match(/^\/t\/([^/]+)\/?$/);
+	return matched?.[1] ?? null;
+};
+
 export default function App() {
 	const [tweets, setTweets] = useState<RTweet[]>([]);
 	const [allTweets, setAllTweets] = useState<RTweet[]>([]);
@@ -35,6 +40,9 @@ export default function App() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+	const [singleTweetId, setSingleTweetId] = useState<string | null>(() =>
+		getTweetIdFromPath(window.location.pathname),
+	);
 
 	const desktopSearchInputRef = useRef<HTMLInputElement>(null);
 	const mobileSearchInputRef = useRef<HTMLInputElement>(null);
@@ -45,6 +53,7 @@ export default function App() {
 	);
 	const normalizedSearchQuery = searchQuery.trim();
 	const isSearching = normalizedSearchQuery.length > 0;
+	const isSingleTweetMode = Boolean(singleTweetId);
 	const searchResults = useMemo(
 		() => filterTweetsByKeyword(allTweets, searchQuery),
 		[allTweets, searchQuery],
@@ -56,6 +65,19 @@ export default function App() {
 			),
 		[searchResults],
 	);
+	const singleTweet = useMemo(() => {
+		if (!singleTweetId) {
+			return null;
+		}
+
+		return (
+			allTweets.find(
+				(tweet) =>
+					tweet.id_str === singleTweetId ||
+					(tweet as { id?: string }).id === singleTweetId,
+			) ?? null
+		);
+	}, [allTweets, singleTweetId]);
 
 	const fetchNextPage = useCallback(async () => {
 		try {
@@ -113,6 +135,10 @@ export default function App() {
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
+			if (isSingleTweetMode) {
+				return;
+			}
+
 			const isSearchShortcut =
 				(event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
 			if (!isSearchShortcut) {
@@ -136,6 +162,15 @@ export default function App() {
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [isSingleTweetMode]);
+
+	useEffect(() => {
+		const syncPathToState = () => {
+			setSingleTweetId(getTweetIdFromPath(window.location.pathname));
+		};
+
+		window.addEventListener("popstate", syncPathToState);
+		return () => window.removeEventListener("popstate", syncPathToState);
 	}, []);
 
 	return (
@@ -162,21 +197,35 @@ export default function App() {
 
 			{/* 主内容 */}
 			<main className="relative z-10 max-w-[550px] w-full px-4 pt-8 md:pt-12">
-				<TweetSearch
-					query={searchQuery}
-					onQueryChange={setSearchQuery}
-					shortcutLabel={shortcutLabel}
-					isMobileModalOpen={isMobileSearchOpen}
-					onOpenMobileModal={() => setIsMobileSearchOpen(true)}
-					onCloseMobileModal={() => setIsMobileSearchOpen(false)}
-					desktopInputRef={desktopSearchInputRef}
-					mobileInputRef={mobileSearchInputRef}
-				/>
-				<Sidebar />
+				{!isSingleTweetMode && (
+					<TweetSearch
+						query={searchQuery}
+						onQueryChange={setSearchQuery}
+						shortcutLabel={shortcutLabel}
+						isMobileModalOpen={isMobileSearchOpen}
+						onOpenMobileModal={() => setIsMobileSearchOpen(true)}
+						onCloseMobileModal={() => setIsMobileSearchOpen(false)}
+						desktopInputRef={desktopSearchInputRef}
+						mobileInputRef={mobileSearchInputRef}
+					/>
+				)}
+				{!isSingleTweetMode && <Sidebar />}
 				{isLoading ? (
 					<div className="flex justify-center p-8">
 						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
 					</div>
+				) : isSingleTweetMode ? (
+					<section className="flex flex-col items-center">
+						{singleTweet ? (
+							<div className="w-full">
+								<Tweet tweet={singleTweet} showReplies />
+							</div>
+						) : (
+							<div className="w-full rounded-2xl border border-dashed border-white/15 bg-[#10141c]/70 p-8 text-center text-gray-400">
+								未找到 ID 为 {singleTweetId} 的推文。
+							</div>
+						)}
+					</section>
 				) : isSearching ? (
 					<section>
 						<p className="mb-4 rounded-xl border border-white/10 bg-[#11151d]/80 px-4 py-3 text-left text-sm text-gray-300">

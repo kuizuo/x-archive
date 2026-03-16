@@ -92,9 +92,11 @@ const captureFilter = (node: HTMLElement) => {
 const TweetContent = ({
 	tweet: t,
 	components,
+	showReplies = false,
 }: {
 	tweet?: RTweet;
 	components?: TwitterComponents;
+	showReplies?: boolean;
 }) => {
 	const tweetRef = useRef<HTMLDivElement>(null);
 	const [isCapturing, setIsCapturing] = useState(false);
@@ -106,7 +108,7 @@ const TweetContent = ({
 
 	const tweet = enrichTweet(t);
 	// 隐藏 reply
-	if (tweet.in_reply_to_status_id_str) {
+	if (tweet.in_reply_to_status_id_str && !showReplies) {
 		return null;
 	}
 
@@ -247,14 +249,16 @@ const TweetContent = ({
 
 export const Tweet = ({
 	fallback = <TweetSkeleton />,
+	showReplies = false,
 	...props
 }: {
 	tweet?: RTweet;
 	components?: TwitterComponents;
 	fallback?: React.ReactNode;
+	showReplies?: boolean;
 }) => (
 	<Suspense fallback={fallback}>
-		<TweetContent {...props} />
+		<TweetContent {...props} showReplies={showReplies} />
 	</Suspense>
 );
 
