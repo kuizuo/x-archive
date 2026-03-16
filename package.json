@@ -12,6 +12,7 @@
     "tweets-to-entries": "node script/tweets-to-entries.js",
     "merge-entities": "node script/merge-entities.js",
     "slim-entries": "node script/slim-entries.js",
+    "merge-entries-to-1": "node script/merge-entries-to-1.js",
     "wrangler:dev": "tsc -b && vite build --watch && wrangler pages dev dist",
     "wrangler:deploy": "pnpm build && wrangler pages deploy dist"
   },
