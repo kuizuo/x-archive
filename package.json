@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "crawl": "node script/crawl.js",
     "tweets-to-entries": "node script/tweets-to-entries.js",
+    "merge-entities": "node script/merge-entities.js",
     "wrangler:dev": "tsc -b && vite build --watch && wrangler pages dev dist",
     "wrangler:deploy": "pnpm build && wrangler pages deploy dist"
   },
