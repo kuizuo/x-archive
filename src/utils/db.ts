@@ -135,10 +135,14 @@ function transformTweet(t: any): RTweet | null {
   const id = t.rest_id
   const screenName = t.core?.user_results?.result?.core?.screen_name || ''
 
+  const fullText = t.note_tweet?.note_tweet_results?.result?.text ?? t.legacy.full_text ?? ''
+  const displayTextRange = t.legacy.display_text_range ?? (fullText ? [0, fullText.length] : [0, 0])
+
   const tweet: any = {
     ...t.legacy,
     id_str: id,
     created_at: t.legacy.created_at,
+    display_text_range: displayTextRange,
     full_text: t.note_tweet?.note_tweet_results?.result?.text ?? t.legacy.full_text,
     text: t.note_tweet?.note_tweet_results?.result?.text ??
       t.legacy.full_text ??
