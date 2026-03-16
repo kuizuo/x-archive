@@ -94,14 +94,46 @@ function extractTweetsFromEntry(entry: TwitterEntry): RTweet[] {
   return tweets
 }
 
-// 转换 tweet 格式
+// 将 entities.media / extended_entities.media 转换为 react-tweet 所需的 mediaDetails
+function buildMediaDetails(legacy: any): any[] | undefined {
+  const mediaList =
+    legacy?.extended_entities?.media ?? legacy?.entities?.media
+  if (!Array.isArray(mediaList) || mediaList.length === 0) return undefined
 
+  return mediaList.map((m: any) => {
+    const large = m.sizes?.large ?? m.sizes?.medium
+    const width = typeof large?.w === 'number' ? large.w : parseInt(large?.w, 10) || 0
+    const height = typeof large?.h === 'number' ? large.h : parseInt(large?.h, 10) || 0
+
+    return {
+      type: m.type || 'photo',
+      media_url_https: m.media_url_https || m.media_url?.replace('http:', 'https:'),
+      display_url: m.display_url,
+      expanded_url: m.expanded_url,
+      url: m.url,
+      indices: Array.isArray(m.indices)
+        ? m.indices.map((i: unknown) => (typeof i === 'string' ? parseInt(i, 10) : i))
+        : m.indices,
+      sizes: m.sizes,
+      original_info: m.original_info ?? {
+        width: width || 1,
+        height: height || 1,
+        focus_rects: [],
+      },
+      ext_alt_text: m.ext_alt_text,
+      ext_media_availability: m.ext_media_availability ?? { status: 'Available' },
+      ext_media_color: m.ext_media_color,
+      video_info: m.video_info,
+    }
+  })
+}
+
+// 转换 tweet 格式
 function transformTweet(t: any): RTweet | null {
   if (!t || !t.legacy) return null
 
   const id = t.rest_id
   const screenName = t.core?.user_results?.result?.core?.screen_name || ''
-
 
   const tweet: any = {
     ...t.legacy,
@@ -125,6 +157,7 @@ function transformTweet(t: any): RTweet | null {
       profile_image_url_https:
         t.core?.user_results?.result?.avatar?.image_url || '',
     },
+    mediaDetails: buildMediaDetails(t.legacy),
   }
 
   // 处理引用推文 (Quoted Tweet)

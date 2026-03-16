@@ -3,13 +3,13 @@ import {
 	type TwitterComponents,
 	TweetContainer,
 	TweetHeader,
-	TweetInReplyTo,
 	TweetMedia,
 	TweetInfo,
-	QuotedTweet,
 	enrichTweet,
 	TweetNotFound,
 	TweetSkeleton,
+	TweetInReplyTo,
+	QuotedTweet,
 } from "react-tweet";
 import type { EnrichedTweet } from "react-tweet";
 import { TweetBody } from "./tweet-body";
@@ -17,6 +17,25 @@ import { TweetActions } from "./tweet-actions";
 import type { Tweet as RTweet } from "react-tweet/api";
 import { toPng } from "html-to-image";
 import { IMG_PROXY_URL, ENABLE_IMAGE_PROXY } from "../consts";
+
+// 自定义 MediaImg：img.x.kuizuo.me 的 URL 被 react-tweet 的 getMediaUrl 去掉扩展名并加了 ?format=xxx&name=xxx，
+// 代理可能无法解析，需要还原为带扩展名的完整路径
+const MediaImg = (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+	const src = props.src;
+	let resolvedSrc = src;
+	if (typeof src === "string" && src.includes("img.x.kuizuo.me")) {
+		try {
+			const url = new URL(src);
+			const format = url.searchParams.get("format");
+			if (format && !url.pathname.endsWith(`.${format}`)) {
+				resolvedSrc = `${url.origin}${url.pathname}.${format}`;
+			}
+		} catch {
+			// 解析失败则使用原 src
+		}
+	}
+	return <img {...props} src={resolvedSrc} />;
+};
 
 const waitForImages = async (root: HTMLElement) => {
 	const images = Array.from(root.querySelectorAll("img"));
@@ -89,6 +108,10 @@ const captureFilter = (node: HTMLElement) => {
 	return true;
 };
 
+const defaultComponents: TwitterComponents = {
+	MediaImg,
+};
+
 const TweetContent = ({
 	tweet: t,
 	components,
@@ -98,6 +121,7 @@ const TweetContent = ({
 	components?: TwitterComponents;
 	showReplies?: boolean;
 }) => {
+	const mergedComponents = { ...defaultComponents, ...components };
 	const tweetRef = useRef<HTMLDivElement>(null);
 	const [isCapturing, setIsCapturing] = useState(false);
 	const [isHovered, setIsHovered] = useState(false);
@@ -233,13 +257,15 @@ const TweetContent = ({
 				</button>
 			)}
 			<TweetContainer>
-				<TweetHeader tweet={tweet} components={components} />
+				<TweetHeader tweet={tweet} components={mergedComponents} />
 				{tweet.in_reply_to_status_id_str && <TweetInReplyTo tweet={tweet} />}
 				<TweetBody tweet={tweet as EnrichedTweet & { full_text?: string }} />
 				{tweet.mediaDetails?.length ? (
-					<TweetMedia tweet={tweet} components={components} />
+					<TweetMedia tweet={tweet} components={mergedComponents} />
 				) : null}
-				{tweet.quoted_tweet && <QuotedTweet tweet={tweet.quoted_tweet} />}
+				{tweet.quoted_tweet && (
+					<QuotedTweet tweet={tweet.quoted_tweet} components={mergedComponents} />
+				)}
 				<TweetInfo tweet={tweet} />
 				<TweetActions tweet={tweet as unknown as RTweet} />
 			</TweetContainer>

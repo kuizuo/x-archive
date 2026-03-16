@@ -96388,20 +96388,85 @@
                       ],
                       "entities": {
                         "hashtags": [],
-                        "symbols": [],
-                        "timestamps": [],
-                        "urls": [
+                        "media": [
                           {
                             "display_url": "pic.x.com/hnzw4FmVOJ",
                             "expanded_url": "https://x.com/kuizuo/status/1819310295883698644/photo/1",
-                            "url": "https://t.co/hnzw4FmVOJ",
+                            "id_str": "1819310231618269185",
                             "indices": [
                               43,
                               66
-                            ]
+                            ],
+                            "media_key": "3_1819310231618269185",
+                            "media_url_https": "https://img.x.kuizuo.me/1819310295883698644-GT99BDvXMAEm3w3.png",
+                            "type": "photo",
+                            "url": "https://t.co/hnzw4FmVOJ",
+                            "sizes": {
+                              "thumb": {
+                                "w": 70,
+                                "h": 70,
+                                "resize": "crop"
+                              },
+                              "medium": {
+                                "w": 504,
+                                "h": 70,
+                                "resize": "fit"
+                              },
+                              "small": {
+                                "w": 504,
+                                "h": 70,
+                                "resize": "fit"
+                              },
+                              "large": {
+                                "w": 504,
+                                "h": 70,
+                                "resize": "fit"
+                              }
+                            }
                           }
                         ],
+                        "symbols": [],
+                        "urls": [],
                         "user_mentions": []
+                      },
+                      "extended_entities": {
+                        "media": [
+                          {
+                            "display_url": "pic.x.com/hnzw4FmVOJ",
+                            "expanded_url": "https://x.com/kuizuo/status/1819310295883698644/photo/1",
+                            "id_str": "1819310231618269185",
+                            "indices": [
+                              43,
+                              66
+                            ],
+                            "media_key": "3_1819310231618269185",
+                            "media_url_https": "https://img.x.kuizuo.me/1819310295883698644-GT99BDvXMAEm3w3.png",
+                            "type": "photo",
+                            "url": "https://t.co/hnzw4FmVOJ",
+                            "sizes": {
+                              "thumb": {
+                                "w": 70,
+                                "h": 70,
+                                "resize": "crop"
+                              },
+                              "medium": {
+                                "w": 504,
+                                "h": 70,
+                                "resize": "fit"
+                              },
+                              "small": {
+                                "w": 504,
+                                "h": 70,
+                                "resize": "fit"
+                              },
+                              "large": {
+                                "w": 504,
+                                "h": 70,
+                                "resize": "fit"
+                              }
+                            }
+                          }
+                        ]
                       },
                       "favorite_count": 40,
                       "favorited": false,
