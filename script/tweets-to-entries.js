@@ -25,7 +25,7 @@ const DEFAULT_USER = {
   accountId: '1260079170941378561',
   username: 'kuizuo',
   accountDisplayName: '愧怍',
-  avatarMediaUrl: 'https://pbs.twimg.com/profile_images/1913049212360777728/5xtsdVK4_normal.jpg',
+  avatarMediaUrl: 'https://img.x.kuizuo.me/logo.jpg',
 };
 
 // ==================== 工具函数 ====================
