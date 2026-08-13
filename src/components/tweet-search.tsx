@@ -110,15 +110,37 @@ export const TweetSearch: FC<TweetSearchProps> = ({
 				</div>
 			</div>
 
-			<button
-				ref={mobileTriggerRef}
-				type="button"
-				onClick={onOpenMobileModal}
-				aria-label="打开搜索"
-				className="fixed bottom-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/80 text-white shadow-xl backdrop-blur-xl transition-transform hover:scale-105 md:hidden"
-			>
-				<SearchIcon />
-			</button>
+			<div className="sticky top-0 z-30 pb-4 md:hidden">
+				<div className="rounded-2xl border border-gray-800/70 bg-black/75 p-2 shadow-lg backdrop-blur-xl">
+					<div className="flex items-center gap-2">
+						<button
+							ref={mobileTriggerRef}
+							type="button"
+							onClick={onOpenMobileModal}
+							aria-label="打开搜索"
+							className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-white/10 bg-[#0f1115] px-3 py-2 text-left text-sm text-white transition-colors hover:bg-white/5"
+						>
+							<SearchIcon />
+							<span
+								className={`min-w-0 flex-1 truncate ${
+									query.trim() ? "text-white" : "text-gray-500"
+								}`}
+							>
+								{query.trim() || "搜索推文内容..."}
+							</span>
+						</button>
+						{query.trim() && (
+							<button
+								type="button"
+								onClick={clearInput}
+								className="shrink-0 rounded-xl px-3 py-2 text-xs text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+							>
+								清空
+							</button>
+						)}
+					</div>
+				</div>
+			</div>
 
 			{isMobileModalOpen && (
 				<div
