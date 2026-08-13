@@ -113,6 +113,22 @@ export const Sidebar: FC = () => {
 					</div>
 				</div>
 
+				<a
+					href="/work-story"
+					className="group mb-4 block overflow-hidden rounded-2xl border border-blue-400/20 bg-linear-to-br from-blue-500/15 to-purple-500/10 p-4 transition-colors hover:border-blue-400/40"
+				>
+					<div className="mb-2 flex items-center justify-between">
+						<span className="text-xs font-semibold tracking-[0.16em] text-blue-400">
+							特别归档
+						</span>
+						<span className="text-gray-500 transition-transform group-hover:translate-x-1">→</span>
+					</div>
+					<h2 className="text-lg font-bold text-white">愧怍的职场故事</h2>
+					<p className="mt-1 text-sm leading-relaxed text-gray-400">
+						一段职场经历的时间线记录
+					</p>
+				</a>
+
 				{/* 页脚链接 */}
 				<div className="px-4 flex flex-wrap gap-x-3 gap-y-1">
 					<button
