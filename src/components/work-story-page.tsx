@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { workStoryTweetStats } from "../data/work-story-tweets";
+import { TweetQuote } from "./tweet-quote";
 import "./work-story-page.css";
 
 type Block =
 	| { type: "heading"; level: number; text: string }
 	| { type: "paragraph"; lines: string[] }
-	| { type: "quote"; lines: string[] }
+	| { type: "quote"; lines: string[]; tweetId?: string }
 	| { type: "list"; ordered: boolean; items: string[] }
 	| { type: "image"; alt: string; src: string }
 	| { type: "rule" };
@@ -31,10 +33,18 @@ const parseInline = (text: string): ReactNode[] => {
 const parseMarkdown = (markdown: string): Block[] => {
 	const blocks: Block[] = [];
 	const lines = markdown.replaceAll("\r\n", "\n").split("\n");
+	let tweetId: string | undefined;
 
 	for (let index = 0; index < lines.length; ) {
 		const line = lines[index];
 		if (!line.trim()) {
+			index += 1;
+			continue;
+		}
+
+		const tweetMarker = line.match(/^<!-- tweet:(\d+) -->$/);
+		if (tweetMarker) {
+			tweetId = tweetMarker[1];
 			index += 1;
 			continue;
 		}
@@ -65,7 +75,8 @@ const parseMarkdown = (markdown: string): Block[] => {
 				quote.push(lines[index].replace(/^> ?/, ""));
 				index += 1;
 			}
-			blocks.push({ type: "quote", lines: quote });
+			blocks.push({ type: "quote", lines: quote, tweetId });
+			tweetId = undefined;
 			continue;
 		}
 
@@ -99,7 +110,7 @@ const parseMarkdown = (markdown: string): Block[] => {
 
 const headingId = (text: string) => text.replaceAll(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
 
-const MarkdownArticle = ({ blocks }: { blocks: Block[] }) => (
+const MarkdownArticle = ({ blocks, showStats }: { blocks: Block[]; showStats: boolean }) => (
 	<article className="work-story-article">
 		{blocks.map((block, index) => {
 			if (block.type === "heading") {
@@ -107,7 +118,11 @@ const MarkdownArticle = ({ blocks }: { blocks: Block[] }) => (
 				return <Tag id={headingId(block.text)} key={index}>{parseInline(block.text)}</Tag>;
 			}
 			if (block.type === "paragraph") return <p key={index}>{parseInline(block.lines.join("\n"))}</p>;
-			if (block.type === "quote") return <blockquote className={block.lines[0] === "**图片缺失**" ? "is-missing-media" : undefined} key={index}>{block.lines.map((line, lineIndex) => line ? <p key={lineIndex}>{parseInline(line)}</p> : <br key={lineIndex} />)}</blockquote>;
+			if (block.type === "quote") {
+				const content = block.lines.map((line, lineIndex) => line ? <p key={lineIndex}>{parseInline(line)}</p> : <br key={lineIndex} />);
+				if (block.tweetId) return <TweetQuote key={index} stats={workStoryTweetStats[block.tweetId]} showStats={showStats}>{content}</TweetQuote>;
+				return <blockquote className={block.lines[0] === "**图片缺失**" ? "is-missing-media" : undefined} key={index}>{content}</blockquote>;
+			}
 			if (block.type === "image") return <figure key={index}><img src={`/archive/${block.src}`} alt={block.alt} loading="lazy" /></figure>;
 			if (block.type === "list") {
 				const Tag = block.ordered ? "ol" : "ul";
@@ -124,10 +139,14 @@ const TableOfContents = ({
 	items,
 	activeId,
 	onNavigate,
+	showStats,
+	onToggleStats,
 }: {
 	items: TocItem[];
 	activeId: string;
 	onNavigate?: (id: string) => void;
+	showStats: boolean;
+	onToggleStats: () => void;
 }) => (
 	<nav className="work-story-toc" aria-label="文章目录">
 		<p className="work-story-toc-title">目录</p>
@@ -150,6 +169,16 @@ const TableOfContents = ({
 				</li>
 			))}
 		</ol>
+		<button
+			type="button"
+			className="work-story-stats-toggle"
+			role="switch"
+			aria-checked={showStats}
+			onClick={onToggleStats}
+		>
+			<span>显示推文数据</span>
+			<i aria-hidden="true" />
+		</button>
 	</nav>
 );
 
@@ -158,6 +187,7 @@ export const WorkStoryPage = () => {
 	const [error, setError] = useState(false);
 	const [activeId, setActiveId] = useState(() => decodeURIComponent(window.location.hash.slice(1)));
 	const [isTocOpen, setIsTocOpen] = useState(false);
+	const [showStats, setShowStats] = useState(false);
 	const blocks = useMemo(() => parseMarkdown(markdown), [markdown]);
 	const tocItems = useMemo(
 		() => blocks
@@ -253,9 +283,9 @@ export const WorkStoryPage = () => {
 					<div className="work-story-state">归档暂时无法读取，请稍后刷新。</div>
 				) : markdown ? (
 					<>
-						<MarkdownArticle blocks={blocks} />
+						<MarkdownArticle blocks={blocks} showStats={showStats} />
 						<aside className="work-story-toc-column">
-							<TableOfContents items={tocItems} activeId={activeId} onNavigate={navigateToSection} />
+							<TableOfContents items={tocItems} activeId={activeId} onNavigate={navigateToSection} showStats={showStats} onToggleStats={() => setShowStats((value) => !value)} />
 						</aside>
 					</>
 				) : (
@@ -279,6 +309,8 @@ export const WorkStoryPage = () => {
 							items={tocItems}
 							activeId={activeId}
 							onNavigate={(id) => navigateToSection(id, true)}
+							showStats={showStats}
+							onToggleStats={() => setShowStats((value) => !value)}
 						/>
 					</aside>
 				</div>
